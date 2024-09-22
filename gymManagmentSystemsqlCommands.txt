@@ -1,0 +1,85 @@
+
+CREATE DATABASE GymManagmentSystem;
+GO
+
+
+USE GymManagmentSystem;
+GO
+
+
+CREATE TABLE Members (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    FirstName NVARCHAR(50) NOT NULL,
+    LastName NVARCHAR(50) NOT NULL,
+    Birthday DATE NOT NULL,
+    IdCardNumber NVARCHAR(20) NOT NULL UNIQUE,
+    Email NVARCHAR(100) NOT NULL UNIQUE,
+    RegistrationDate DATETIME NOT NULL DEFAULT GETDATE(),
+    IsDeleted BIT NOT NULL DEFAULT 0
+);
+GO
+
+CREATE TABLE Subscriptions (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Code NVARCHAR(50) NOT NULL UNIQUE,
+    Description NVARCHAR(200) NOT NULL,
+    NumberOfMonths INT NOT NULL,
+    WeekFrequency NVARCHAR(20) NOT NULL,
+    TotalNumberOfSessions INT NOT NULL,
+    TotalPrice DECIMAL(18, 2) NOT NULL,
+    IsDeleted BIT NOT NULL DEFAULT 0
+);
+GO
+
+
+CREATE TABLE MemberSubscriptions (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    MemberId INT NOT NULL FOREIGN KEY REFERENCES Members(Id),
+    SubscriptionId INT NOT NULL FOREIGN KEY REFERENCES Subscriptions(Id),
+    OriginalPrice DECIMAL(18, 2) NOT NULL,
+    DiscountValue DECIMAL(18, 2) NOT NULL DEFAULT 0,
+    PaidPrice DECIMAL(18, 2) NOT NULL,
+    StartDate DATE NOT NULL,
+    EndDate DATE NOT NULL,
+    RemainingSessions INT NOT NULL,
+    IsDeleted BIT NOT NULL DEFAULT 0
+);
+GO
+
+
+CREATE TABLE Users (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Username NVARCHAR(50) NOT NULL UNIQUE,
+    PasswordHash NVARCHAR(200) NOT NULL,
+    FirstName NVARCHAR(50) NOT NULL,
+    LastName NVARCHAR(50) NOT NULL,
+    Email NVARCHAR(100) NOT NULL UNIQUE,
+    Role NVARCHAR(50) NOT NULL CHECK (Role IN ('Admin', 'Receptionist')),
+    IsDeleted BIT NOT NULL DEFAULT 0
+);
+GO
+
+
+INSERT INTO Users (Username, PasswordHash, FirstName, LastName, Email, Role, IsDeleted)
+VALUES ('admin', '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', 'Admin', 'Admin', 'admin@example.com', 'Admin', 0);
+GO
+
+
+CREATE TABLE Discounts (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Code NVARCHAR(50) NOT NULL UNIQUE,
+    Value DECIMAL(18, 2) NOT NULL,
+    StartDate DATE NOT NULL,
+    EndDate DATE NOT NULL,
+    IsDeleted BIT NOT NULL DEFAULT 0
+);
+GO
+
+
+CREATE TABLE DiscountedMemberSubscriptions (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    MemberSubscriptionId INT NOT NULL FOREIGN KEY REFERENCES MemberSubscriptions(Id),
+    DiscountId INT NOT NULL FOREIGN KEY REFERENCES Discounts(Id),
+    IsDeleted BIT NOT NULL DEFAULT 0
+);
+GO
